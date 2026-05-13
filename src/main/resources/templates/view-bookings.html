@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Trip History - SwiftRide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --black:   #080a0f;
+            --deep:    #0d1117;
+            --card:    #111827;
+            --border:  #1f2a3a;
+            --amber:   #f5a623;
+            --white:   #f0f4ff;
+            --muted:   #7a8fa8;
+            --danger:  #e05555;
+            --green:   #30d87c;
+            --blue:    #3b82f6;
+        }
+
+        body { background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; margin: 0; padding: 0; }
+
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; background: rgba(8,10,15,0.95); border-bottom: 1px solid var(--border); }
+        .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--amber); }
+        .nav-logo span { color: var(--white); }
+        .nav-links a { color: var(--muted); text-decoration: none; margin-left: 30px; font-size: 13px; font-weight: 500; transition: color 0.2s;}
+        .nav-links a:hover { color: var(--amber); }
+
+        .container { padding: 60px 48px; max-width: 1200px; margin: 0 auto; }
+        .header-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
+        .header-row h1 { font-family: 'Bebas Neue', sans-serif; font-size: 48px; margin: 0; letter-spacing: 2px; color: var(--amber); }
+
+        h2 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top: 50px; color: var(--white);}
+
+        .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.5); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(255,255,255,0.02); text-align: left; padding: 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+        td { padding: 20px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(245,166,35,0.02); }
+
+        .route-text { color: var(--white); font-weight: 500; }
+        .type-badge { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--amber); }
+
+        .status-badge { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; display: inline-block;}
+        .status-pending { background: rgba(245,166,35,0.1); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+        .status-ongoing { background: rgba(59,130,246,0.1); color: var(--blue); border: 1px solid rgba(59,130,246,0.2); }
+        .status-completed { background: rgba(48,216,124,0.1); color: var(--green); border: 1px solid rgba(48,216,124,0.2); }
+        .status-declined { background: rgba(224,85,85,0.1); color: var(--danger); border: 1px solid rgba(224,85,85,0.2); }
+
+        .btn-cancel { background: rgba(224, 85, 85, 0.1); color: var(--danger); border: 1px solid var(--danger); padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-cancel:hover { background: var(--danger); color: white; }
+
+        .btn-pay { background: var(--green); color: var(--black); border: none; padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(48, 216, 124, 0.3); }
+        .btn-pay:hover { background: #28c06e; transform: translateY(-2px); }
+
+        .empty-state { padding: 40px; text-align: center; color: var(--muted); font-style: italic; }
+        .back-link { display: inline-block; margin-top: 30px; color: var(--muted); text-decoration: none; font-size: 13px; transition: color 0.2s; }
+        .back-link:hover { color: var(--white); }
+
+        /* MODAL STYLES */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(8,10,15,0.85); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; position: relative; box-shadow: 0 40px 80px rgba(0,0,0,0.6); text-align: center; }
+        .form-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--green), transparent); border-radius: 16px 16px 0 0; }
+        .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+        .modal-close:hover { color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo">Swift<span>Ride</span></div>
+    <div class="nav-links">
+        <a th:href="@{/home}">Home</a>
+        <a th:href="@{/view}" style="color: var(--amber);">My Trips</a>
+        <a th:href="@{/logout}" style="color: var(--danger);">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header-row">
+        <div>
+            <h1 th:text="${isAdminView} ? 'Global Trip History' : 'My Trip Details'">Trip History</h1>
+            <p style="color: var(--muted); margin-top: 5px;" th:text="${isAdminView} ? 'System oversight: Live tracking of all bookings.' : 'Manage and track your booking requests.'"></p>
+        </div>
+        <div style="text-align: right;">
+            <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted);" th:text="'Logged in as: ' + ${session.user}">User</span>
+        </div>
+    </div>
+
+    <div th:if="${isAdminView}">
+        <div class="table-card">
+            <table>
+                <thead>
+                <tr>
+                    <th>Customer & Route</th>
+                    <th>Cab Type</th>
+                    <th>Distance</th>
+                    <th>Fare</th>
+                    <th>Live Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="booking : ${bookings}" th:with="parts=${#strings.arraySplit(booking, ',')}">
+                    <td class="route-text" th:text="${parts.length > 0 ? parts[0] : ''}"></td>
+                    <td class="type-badge" th:text="${parts.length > 1 ? parts[1] : ''}"></td>
+
+                    <td th:text="${parts[2] == 'TBD' ? 'TBD' : parts[2] + ' km'}"></td>
+                    <td style="font-weight: 600;" th:text="${parts[3] == 'TBD' ? 'TBD' : 'Rs.' + parts[3]}"></td>
+
+                    <td>
+                        <span th:if="${parts.length > 4 and #strings.startsWith(parts[4].trim(), 'PENDING')}" class="status-badge status-pending">PENDING</span>
+                        <span th:if="${parts.length > 4 and #strings.startsWith(parts[4].trim(), 'ONGOING')}" class="status-badge status-ongoing" th:text="${parts[4].trim()}"></span>
+
+                        <span th:if="${parts.length > 4 and #strings.startsWith(parts[4].trim(), 'COMPLETED')}" class="status-badge status-completed" th:text="${parts[4].trim()}"></span>
+
+                        <span th:if="${parts.length > 4 and #strings.startsWith(parts[4].trim(), 'DECLINED')}" class="status-badge status-declined">DECLINED</span>
+                    </td>
+                    <td>
+                        <form th:action="@{/delete}" method="post" style="margin: 0;">
+                            <input type="hidden" name="bookingDetail" th:value="${booking}"/>
+                            <button type="submit" class="btn-cancel">DELETE</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div th:if="${#lists.isEmpty(bookings)}" class="empty-state">No records found in the system.</div>
+        </div>
+    </div>
+
+    <div th:if="${!isAdminView}">
+
+        <h2>Pending Requests</h2>
+        <div class="table-card">
+            <table>
+                <thead>
+                <tr>
+                    <th>Route</th>
+                    <th>Cab Type</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="booking : ${pendingBookings}" th:with="parts=${#strings.arraySplit(booking, ',')}">
+                    <td class="route-text" th:text="${parts[0]}"></td>
+                    <td class="type-badge" th:text="${parts[1]}"></td>
+                    <td><span class="status-badge status-pending">PENDING</span></td>
+                    <td>
+                        <form th:action="@{/delete}" method="post" style="margin: 0;">
+                            <input type="hidden" name="bookingDetail" th:value="${booking}"/>
+                            <button type="submit" class="btn-cancel">CANCEL TRIP</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div th:if="${#lists.isEmpty(pendingBookings)}" class="empty-state">You have no pending requests.</div>
+        </div>
+
+        <h2>Active / Ongoing Trips</h2>
+        <div class="table-card" style="border-color: var(--blue); box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);">
+            <table>
+                <thead>
+                <tr>
+                    <th>Route</th>
+                    <th>Cab Type</th>
+                    <th>Status</th>
+                    <th>Driver Note</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="booking : ${ongoingBookings}" th:with="parts=${#strings.arraySplit(booking, ',')}">
+                    <td class="route-text" th:text="${parts[0]}"></td>
+                    <td class="type-badge" th:text="${parts[1]}"></td>
+                    <td><span class="status-badge status-ongoing">ONGOING</span></td>
+                    <td><span style="font-size: 11px; color: var(--blue); font-weight: bold;">DRIVER EN ROUTE</span></td>
+                </tr>
+                </tbody>
+            </table>
+            <div th:if="${#lists.isEmpty(ongoingBookings)}" class="empty-state">You have no active trips currently.</div>
+        </div>
+
+        <h2>Trip History</h2>
+        <div class="table-card">
+            <table>
+                <thead>
+                <tr>
+                    <th>Route</th>
+                    <th>Cab Type</th>
+                    <th>Distance</th>
+                    <th>Final Fare</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="booking : ${completedBookings}" th:with="parts=${#strings.arraySplit(booking, ',')}">
+                    <td class="route-text" th:text="${parts[0]}"></td>
+                    <td class="type-badge" th:text="${parts[1]}"></td>
+                    <td th:text="${parts[2]} + ' km'"></td>
+                    <td style="font-weight: 600;" th:text="'Rs.' + ${parts[3]}"></td>
+                    <td>
+                        <span th:if="${parts.length > 4 and #strings.startsWith(parts[4].trim(), 'COMPLETED')}" class="status-badge status-completed">COMPLETED</span>
+                        <span th:if="${parts.length > 4 and #strings.startsWith(parts[4].trim(), 'DECLINED')}" class="status-badge status-declined">DECLINED</span>
+                    </td>
+                    <td>
+                        <button th:if="${#strings.startsWith(parts[4].trim(), 'COMPLETED') and !#strings.contains(parts[4].trim(), 'PAID')}"
+                                type="button"
+                                class="btn-pay"
+                                th:attr="onclick=|openPayModal('${parts[3]}', this, '${booking}')|">
+                            PAY NOW
+                        </button>
+
+                        <span th:if="${#strings.contains(parts[4].trim(), 'PAID')}" style="color: var(--green); font-weight: bold; font-size: 12px; letter-spacing: 1px;">PAID ✓</span>
+
+                        <span th:if="${#strings.startsWith(parts[4].trim(), 'DECLINED')}" style="font-size: 11px; color: var(--muted); font-weight: bold;">CLOSED</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <div th:if="${#lists.isEmpty(completedBookings)}" class="empty-state">No past trip history found.</div>
+        </div>
+
+    </div>
+
+    <a th:href="${isAdminView} ? @{/admin} : @{/home}" class="back-link">← Back to Dashboard</a>
+</div>
+
+<div id="payModal" class="modal-overlay">
+    <div class="form-card" style="width: 100%; max-width: 400px; margin: auto; text-align: center;">
+        <button class="modal-close" onclick="closePayModal()">✕</button>
+
+        <div id="payInitial">
+            <h2 style="margin-bottom: 8px;">Checkout</h2>
+            <p style="font-size: 14px; color: var(--muted); margin-bottom: 24px;">Please confirm your final payment for the trip.</p>
+            <div style="font-size: 36px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; color: var(--amber); margin-bottom: 24px;" id="payAmountDisplay">Rs. 0</div>
+            <button onclick="processPayment()" class="btn-pay" style="width: 100%; padding: 16px; font-size: 16px;">CONFIRM PAYMENT</button>
+        </div>
+
+        <div id="paySuccess" style="display: none; padding: 20px 0;">
+            <div style="width: 64px; height: 64px; background: rgba(48,216,124,0.1); border: 2px solid var(--green); color: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px;">✓</div>
+            <h2 style="color: var(--green);">Payment Complete!</h2>
+            <p style="color: var(--muted); font-size: 14px;">Thank you for riding with SwiftRide.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPayBtn = null;
+    let currentBookingStr = '';
+
+    function openPayModal(amount, btnElement, rawBookingData) {
+        currentPayBtn = btnElement;
+        currentBookingStr = rawBookingData;
+
+        document.getElementById('payAmountDisplay').innerText = 'Rs. ' + amount;
+        document.getElementById('payInitial').style.display = 'block';
+        document.getElementById('paySuccess').style.display = 'none';
+        document.getElementById('payModal').style.display = 'flex';
+    }
+
+    function processPayment() {
+        // Swap to Success UI
+        document.getElementById('payInitial').style.display = 'none';
+        document.getElementById('paySuccess').style.display = 'block';
+
+        if (currentPayBtn) {
+            currentPayBtn.innerText = 'PAID ✓';
+            currentPayBtn.style.background = 'transparent';
+            currentPayBtn.style.color = 'var(--green)';
+            currentPayBtn.style.border = '1px solid var(--green)';
+            currentPayBtn.style.boxShadow = 'none';
+            currentPayBtn.disabled = true;
+        }
+
+        // Send the payment data to the Java Backend via hidden POST request
+        const formData = new URLSearchParams();
+        formData.append("bookingDetail", currentBookingStr);
+
+        fetch('/pay-booking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData
+        }).then(() => {
+            // After 2.5 seconds, refresh the page to lock it down completely
+            setTimeout(() => {
+                window.location.reload();
+            }, 2500);
+        });
+    }
+
+    function closePayModal() {
+        document.getElementById('payModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>

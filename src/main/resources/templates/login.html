@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login - SwiftRide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --black:   #080a0f;
+            --deep:    #0d1117;
+            --card:    #111827;
+            --border:  #1f2a3a;
+            --amber:   #f5a623;
+            --amber2:  #ffd166;
+            --white:   #f0f4ff;
+            --muted:   #7a8fa8;
+            --danger:  #e05555;
+            --green:   #30d87c;
+        }
+
+        body {
+            background: var(--black);
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ════════════════ NAV ════════════════ */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 48px;
+            background: transparent;
+        }
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--amber); text-decoration: none;
+        }
+        .nav-logo span { color: var(--white); }
+        .back-link {
+            color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: none; transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--amber); }
+
+        /* ════════════════ AUTH WRAPPER & BACKGROUND ════════════════ */
+        .auth-wrapper {
+            flex: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 20px;
+        }
+        .bg-grid {
+            position: absolute; inset: 0; pointer-events: none;
+            background-image:
+                    linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridDrift 20s linear infinite;
+        }
+        @keyframes gridDrift {
+            0%   { transform: translateY(0); }
+            100% { transform: translateY(60px); }
+        }
+
+        /* ════════════════ AUTH CARD ════════════════ */
+        .auth-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 48px 40px; width: 100%; max-width: 420px;
+            position: relative; z-index: 2;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+            animation: fadeUp 0.6s ease forwards;
+        }
+        .auth-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, var(--amber), var(--amber2), transparent);
+            border-radius: 16px 16px 0 0;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header { text-align: center; margin-bottom: 32px; }
+        .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; color: var(--white); margin-bottom: 8px; }
+        .card-sub { font-size: 14px; color: var(--muted); }
+
+        /* ════════════════ FORM ELEMENTS ════════════════ */
+        .form-group { margin-bottom: 20px; }
+        .form-label {
+            display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px;
+        }
+        .form-input {
+            width: 100%; padding: 14px 16px; background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border); border-radius: 8px; color: var(--white);
+            font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: all .2s;
+        }
+        .form-input:focus { border-color: var(--amber); background: rgba(245,166,35,0.04); }
+
+        .submit-btn {
+            width: 100%; padding: 16px; background: var(--amber); color: var(--black);
+            border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
+            cursor: pointer; transition: all .2s; margin-top: 8px;
+        }
+        .submit-btn:hover { background: var(--amber2); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(245,166,35,0.2); }
+        .submit-btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
+
+        /* ════════════════ ERROR MESSAGE ════════════════ */
+        .error-box {
+            background: rgba(224, 85, 85, 0.1); border: 1px solid rgba(224, 85, 85, 0.3); border-radius: 8px;
+            padding: 12px; color: var(--danger); font-size: 13px; text-align: center; margin-bottom: 24px; font-weight: 500;
+        }
+
+        /* ════════════════ FOOTER LINK ════════════════ */
+        .auth-footer { text-align: center; margin-top: 24px; font-size: 13px; color: var(--muted); }
+        .auth-footer a { color: var(--amber); text-decoration: none; font-weight: 600; transition: color 0.2s; }
+        .auth-footer a:hover { color: var(--white); }
+
+    </style>
+</head>
+<body>
+
+<nav>
+    <a th:href="@{/}" class="nav-logo">Swift<span>Ride</span></a>
+    <a th:href="@{/}" class="back-link">← BACK TO HOME</a>
+</nav>
+
+<div class="auth-wrapper">
+    <div class="bg-grid"></div>
+
+    <div class="auth-card">
+        <div class="card-header">
+            <h1 class="card-title">WELCOME BACK</h1>
+            <p class="card-sub">Sign in to book rides and manage your trips.</p>
+        </div>
+
+        <div class="error-box" th:if="${error != null}">
+            ⚠ <span th:text="${error}">Invalid username or password.</span>
+        </div>
+
+        <form th:action="@{/login}" method="post" onsubmit="this.querySelector('.submit-btn').disabled = true; this.querySelector('.submit-btn').innerText = 'AUTHENTICATING...';">
+
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input class="form-input" type="text" name="username" placeholder="Enter your username" required autofocus />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input class="form-input" type="password" name="password" placeholder="••••••••" required />
+            </div>
+
+            <button type="submit" class="submit-btn">SIGN IN</button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account? <a th:href="@{/register}">Create one now</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

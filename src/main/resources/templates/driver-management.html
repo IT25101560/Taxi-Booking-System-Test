@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Driver Management - SwiftRide Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --black:   #080a0f;
+            --deep:    #0d1117;
+            --card:    #111827;
+            --border:  #1f2a3a;
+            --amber:   #f5a623;
+            --amber2:  #ffd166;
+            --white:   #f0f4ff;
+            --muted:   #7a8fa8;
+            --danger:  #e05555;
+            --green:   #30d87c;
+            --blue:    #3b82f6;
+        }
+
+        body {
+            background: var(--black); color: var(--white);
+            font-family: 'DM Sans', sans-serif; margin: 0; padding: 0;
+        }
+
+        /* NAV */
+        nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 48px; background: rgba(8,10,15,0.95);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--amber); }
+        .nav-logo span { color: var(--white); }
+        .nav-links a { color: var(--muted); text-decoration: none; margin-left: 30px; font-size: 13px; font-weight: 500; transition: color 0.2s;}
+        .nav-links a:hover, .nav-links a.active { color: var(--amber); }
+
+        /* CONTAINER & LAYOUT */
+        .container { padding: 48px; max-width: 1300px; margin: 0 auto; }
+        .header-row { margin-bottom: 40px; }
+        .header-row h1 { font-family: 'Bebas Neue', sans-serif; font-size: 48px; margin: 0; letter-spacing: 2px; color: var(--amber); }
+        .header-row p { color: var(--muted); margin-top: 8px; font-size: 15px; }
+
+        .dashboard-grid {
+            display: grid; grid-template-columns: 350px 1fr; gap: 32px; align-items: start;
+        }
+
+        /* FORM CARD */
+        .form-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); position: relative;
+        }
+        .form-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, var(--amber), var(--amber2), transparent);
+            border-radius: 16px 16px 0 0;
+        }
+        .form-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1.5px; margin-bottom: 24px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+        .form-input {
+            width: 100%; padding: 12px; box-sizing: border-box; background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border); border-radius: 8px; color: var(--white);
+            font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: all .2s;
+        }
+        .form-input:focus { border-color: var(--amber); background: rgba(245,166,35,0.04); }
+        select.form-input option { background: var(--deep); color: var(--white); }
+
+        .submit-btn {
+            width: 100%; padding: 16px; margin-top: 10px; background: var(--amber); color: var(--black);
+            border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
+            cursor: pointer; transition: all .2s;
+        }
+        .submit-btn:hover { background: var(--amber2); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245,166,35,0.2); }
+
+        /* TABLE CARD */
+        .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-bottom: 32px; }
+        .table-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .table-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; margin: 0; }
+        .count-badge { font-family: 'Space Mono', monospace; font-size: 12px; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 100px; color: var(--amber); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(255,255,255,0.02); text-align: left; padding: 14px 24px; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+        td { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        tr:hover td { background: rgba(245,166,35,0.02); }
+
+        .data-primary { font-weight: 600; color: var(--white); font-size: 14px; }
+        .data-secondary { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+        .status-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; letter-spacing: 1px; }
+        .status-available { background: rgba(48,216,124,0.15); color: var(--green); }
+        .status-busy { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+        .btn-group { display: flex; gap: 8px; }
+        .btn-action { background: transparent; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; color: var(--white); }
+        .btn-approve { border-color: var(--green); color: var(--green); }
+        .btn-approve:hover { background: var(--green); color: var(--black); }
+        .btn-edit:hover { background: var(--blue); border-color: var(--blue); }
+        .btn-delete:hover { background: var(--danger); border-color: var(--danger); }
+
+        .empty-state { padding: 40px; text-align: center; color: var(--muted); font-style: italic; }
+
+        /* MODAL */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(8,10,15,0.85); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; position: relative; }
+        .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+        .modal-close:hover { color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo">SwiftRide <span>ADMIN</span></div>
+    <div class="nav-links">
+        <a th:href="@{/admin}">Dashboard</a>
+        <a th:href="@{/users}">Users</a>
+        <a th:href="@{/register-vehicle}">Vehicles</a>
+        <a th:href="@{/drivers}" class="active">Drivers</a>
+        <a th:href="@{/view}">Bookings</a>
+        <a th:href="@{/logout}" style="color: var(--danger);">Sign Out</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header-row">
+        <h1>Driver Management</h1>
+        <p>Approve applications, edit driver details, and manage the fleet team.</p>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <!-- LEFT: DIRECTLY ADD DRIVER FORM -->
+        <div class="form-card">
+            <h2>Add Driver Directly</h2>
+            <form th:action="@{/admin-add-driver}" method="post">
+                <div class="form-group">
+                    <label class="form-label">National ID</label>
+                    <input class="form-input" type="text" name="id" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input class="form-input" type="text" name="name" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input class="form-input" type="email" name="email" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">License Number</label>
+                    <input class="form-input" type="text" name="license" required />
+                </div>
+
+                <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
+
+                <div class="form-group">
+                    <label class="form-label">Vehicle Plate</label>
+                    <input class="form-input" type="text" name="plate" placeholder="e.g. WP CAS-1234" required />
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label class="form-label">Model</label>
+                        <input class="form-input" type="text" name="model" placeholder="Prius" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-input" name="type" required>
+                            <option value="FastCheap">Fast Cheap</option>
+                            <option value="Economy">Economy</option>
+                            <option value="Comfort">Comfort</option>
+                            <option value="Family">Family</option>
+                            <option value="Premium">Premium</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">REGISTER DRIVER</button>
+            </form>
+        </div>
+
+        <!-- RIGHT: DRIVER LISTS -->
+        <div>
+            <!-- PENDING APPLICATIONS TABLE -->
+            <div class="table-card" style="border-color: rgba(245,166,35,0.4);">
+                <div class="table-header">
+                    <h2>Pending Applications</h2>
+                    <span class="count-badge" style="background: rgba(245,166,35,0.15);" th:text="${#lists.size(pendingDrivers)}">0</span>
+                </div>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Driver Details</th>
+                        <th>Vehicle Info</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Format: id,name,email,license,plate,model,type,status -->
+                    <tr th:each="pDriver : ${pendingDrivers}" th:with="parts=${#strings.arraySplit(pDriver, ',')}">
+                        <td>
+                            <div class="data-primary" th:text="${parts[1]}">Name</div>
+                            <div class="data-secondary" th:text="'ID: ' + ${parts[0]} + ' | Lic: ' + ${parts[3]}">Details</div>
+                        </td>
+                        <td>
+                            <div class="data-primary" th:text="${parts[4]}">Plate</div>
+                            <div class="data-secondary" th:text="${parts[5]} + ' (' + ${parts[6]} + ')'">Model</div>
+                        </td>
+                        <td class="btn-group">
+                            <form th:action="@{/approve-driver}" method="post" style="margin:0;">
+                                <input type="hidden" name="id" th:value="${parts[0]}"/>
+                                <button type="submit" class="btn-action btn-approve">APPROVE</button>
+                            </form>
+                            <form th:action="@{/reject-driver}" method="post" style="margin:0;">
+                                <input type="hidden" name="id" th:value="${parts[0]}"/>
+                                <button type="submit" class="btn-action btn-delete">REJECT</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div th:if="${#lists.isEmpty(pendingDrivers)}" class="empty-state">No pending applications right now.</div>
+            </div>
+
+            <!-- ACTIVE DRIVERS DIRECTORY -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h2>Active Driver Directory</h2>
+                    <span class="count-badge" th:text="'Total: ' + ${#lists.size(drivers)}">Total: 0</span>
+                </div>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Driver Details</th>
+                        <th>Contact / License</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Format: id,name,email,license,status -->
+                    <tr th:each="drv : ${drivers}" th:with="parts=${#strings.arraySplit(drv, ',')}">
+                        <td>
+                            <div class="data-primary" th:text="${parts[1]}">Name</div>
+                            <div class="data-secondary" th:text="'ID: ' + ${parts[0]}">ID</div>
+                        </td>
+                        <td>
+                            <div class="data-primary" style="font-size: 12px; font-weight: 400;" th:text="${parts[2]}">Email</div>
+                            <div class="data-secondary" th:text="'Lic: ' + ${parts[3]}">Lic</div>
+                        </td>
+                        <td>
+                                <span class="status-badge"
+                                      th:classappend="${parts.length > 4 and parts[4] == 'Available' ? 'status-available' : 'status-busy'}"
+                                      th:text="${parts.length > 4 ? parts[4] : 'Unknown'}">Status</span>
+                        </td>
+                        <td class="btn-group">
+                            <!-- Pass string directly to JS modal opener -->
+                            <button class="btn-action btn-edit" th:attr="onclick=|openEditModal('${drv}')|">EDIT</button>
+
+                            <form th:action="@{/delete-driver}" method="post" style="margin: 0;" onsubmit="return confirm('Are you sure you want to remove this driver?');">
+                                <input type="hidden" name="id" th:value="${parts[0]}"/>
+                                <button type="submit" class="btn-action btn-delete">DELETE</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div th:if="${#lists.isEmpty(drivers)}" class="empty-state">No active drivers in the fleet.</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- EDIT DRIVER MODAL -->
+<div id="editModal" class="modal-overlay">
+    <div class="form-card" style="width: 100%; max-width: 400px; margin: auto;">
+        <button class="modal-close" onclick="closeEditModal()">✕</button>
+        <h2>Edit Driver Profile</h2>
+        <form th:action="@{/edit-driver}" method="post">
+
+            <input type="hidden" name="originalId" id="editOriginalId" />
+
+            <div class="form-group">
+                <label class="form-label">National ID</label>
+                <input class="form-input" type="text" name="id" id="editId" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input class="form-input" type="text" name="name" id="editName" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input class="form-input" type="email" name="email" id="editEmail" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">License Number</label>
+                <input class="form-input" type="text" name="license" id="editLicense" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-input" name="status" id="editStatus" required>
+                    <option value="Available">Available</option>
+                    <option value="Busy">Busy / Offline</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn" style="background: var(--blue);">SAVE CHANGES</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditModal(drvDataStr) {
+        // Format: id,name,email,license,status
+        const parts = drvDataStr.split(',');
+
+        document.getElementById('editOriginalId').value = parts[0];
+        document.getElementById('editId').value = parts[0];
+        document.getElementById('editName').value = parts[1];
+
+        if (parts.length > 2) document.getElementById('editEmail').value = parts[2];
+        if (parts.length > 3) document.getElementById('editLicense').value = parts[3];
+        if (parts.length > 4) document.getElementById('editStatus').value = parts[4];
+
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Close on outside click
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>

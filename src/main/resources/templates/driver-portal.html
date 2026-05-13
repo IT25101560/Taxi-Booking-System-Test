@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Driver Portal - SwiftRide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --black:   #080a0f;
+            --deep:    #0d1117;
+            --card:    #111827;
+            --border:  #1f2a3a;
+            --amber:   #f5a623;
+            --white:   #f0f4ff;
+            --muted:   #7a8fa8;
+            --danger:  #e05555;
+            --green:   #30d87c;
+            --blue:    #3b82f6;
+        }
+
+        body { background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; margin: 0; padding: 0; }
+
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; background: rgba(8,10,15,0.95); border-bottom: 1px solid var(--border); }
+        .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--amber); }
+        .nav-logo span { color: var(--white); }
+        .nav-links a { color: var(--muted); text-decoration: none; margin-left: 30px; font-size: 13px; font-weight: 500; transition: color 0.2s;}
+        .nav-links a:hover { color: var(--amber); }
+
+        .container { padding: 60px 48px; max-width: 1200px; margin: 0 auto; }
+        .header-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
+        .header-row h1 { font-family: 'Bebas Neue', sans-serif; font-size: 48px; margin: 0; letter-spacing: 2px; color: var(--amber); }
+
+        h2 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top: 50px; color: var(--white); }
+
+        /* JOB CARDS */
+        .job-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+        .job-card.ongoing { border-color: var(--blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); }
+
+        .job-details { flex-grow: 1; }
+        .job-route { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+        .job-meta { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--muted); }
+
+        .btn-group { display: flex; gap: 12px; }
+        .btn { padding: 12px 24px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; text-transform: uppercase; transition: all 0.2s;}
+
+        .btn-accept { background: rgba(48, 216, 124, 0.15); color: var(--green); border: 1px solid var(--green); }
+        .btn-accept:hover { background: var(--green); color: var(--black); }
+
+        .btn-finish { background: var(--blue); color: var(--white); box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4); }
+        .btn-finish:hover { background: #2563eb; transform: translateY(-2px); }
+
+        .btn-decline { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+        .btn-decline:hover { background: rgba(224, 85, 85, 0.1); color: var(--danger); border-color: var(--danger); }
+
+        /* HISTORY TABLE */
+        .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-top: 20px;}
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(255,255,255,0.02); text-align: left; padding: 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+        td { padding: 20px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+
+        .status-badge { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 1px; display: inline-block; }
+        .status-completed { background: rgba(48,216,124,0.1); color: var(--green); border: 1px solid rgba(48,216,124,0.2); }
+
+        .empty-state { padding: 40px; text-align: center; color: var(--muted); font-style: italic; }
+
+        /* MODAL STYLES */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(8,10,15,0.85); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; position: relative; box-shadow: 0 40px 80px rgba(0,0,0,0.6); }
+        .form-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--blue), transparent); border-radius: 16px 16px 0 0; }
+        .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+        .modal-close:hover { color: var(--danger); }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: all .2s; }
+        .form-input:focus { border-color: var(--blue); background: rgba(59,130,246,0.05); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo">SwiftRide <span>DRIVER</span></div>
+    <div class="nav-links">
+        <a th:href="@{/home}">Passenger View</a>
+        <a th:href="@{/driver-portal}" style="color: var(--amber);">Work Dashboard</a>
+        <a th:href="@{/logout}" style="color: var(--danger);">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header-row">
+        <div>
+            <h1>Driver Dispatch</h1>
+            <p style="color: var(--muted); margin-top: 5px;">Your approved vehicle class: <strong style="color: var(--amber);" th:text="${myCabType}">Type</strong></p>
+        </div>
+        <div style="text-align: right;">
+            <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted);" th:text="'Logged in as: ' + ${session.user}">Driver</span>
+        </div>
+    </div>
+
+    <h2>Incoming Ride Requests</h2>
+    <div th:if="${#lists.isEmpty(availableJobs)}" class="empty-state" style="border: 1px dashed var(--border); border-radius: 12px;">
+        No incoming passenger requests for your vehicle class right now.
+    </div>
+
+    <div th:each="job : ${availableJobs}" class="job-card" th:with="parts=${#strings.arraySplit(job, ',')}">
+        <div class="job-details">
+            <div class="job-route" th:text="${parts[0]}">Customer Name (Route)</div>
+        </div>
+        <div class="btn-group">
+            <form th:action="@{/decline-booking}" method="post">
+                <input type="hidden" name="bookingDetail" th:value="${job}"/>
+                <button type="submit" class="btn btn-decline">Pass</button>
+            </form>
+            <form th:action="@{/accept-booking}" method="post">
+                <input type="hidden" name="bookingDetail" th:value="${job}"/>
+                <button type="submit" class="btn btn-accept">Accept Job</button>
+            </form>
+        </div>
+    </div>
+
+    <h2>Active / Ongoing Trips</h2>
+    <div th:if="${#lists.isEmpty(ongoingJobs)}" class="empty-state">
+        You do not have any trips in progress.
+    </div>
+
+    <div th:each="job : ${ongoingJobs}" class="job-card ongoing" th:with="parts=${#strings.arraySplit(job, ',')}">
+        <div class="job-details">
+            <div class="job-route" th:text="${parts[0]}">Customer Name (Route)</div>
+            <div style="color: var(--blue); font-size: 11px; font-weight: 700; margin-top: 8px; letter-spacing: 1px;">
+                STATUS: DRIVING PASSENGER...
+            </div>
+        </div>
+        <div class="btn-group">
+            <button type="button" class="btn btn-finish" th:attr="onclick=|openFinishModal('${job}')|">FINISH TRIP</button>
+        </div>
+    </div>
+
+    <h2>My Trip History</h2>
+    <div class="table-card">
+        <table>
+            <thead>
+            <tr>
+                <th>Customer & Route</th>
+                <th>Cab Type</th>
+                <th>Actual Distance</th>
+                <th>Final Earned Fare</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="history : ${driverHistory}" th:with="parts=${#strings.arraySplit(history, ',')}">
+                <td style="color: white; font-weight: 500;" th:text="${parts[0]}">Customer (Route)</td>
+                <td style="font-family: 'Space Mono', monospace; color: var(--muted);" th:text="${parts[1]}">Vehicle</td>
+
+                <td th:text="${parts[2]} + ' km'">0 km</td>
+                <td style="color: var(--green); font-weight: bold;" th:text="'Rs.' + ${parts[3]}">Rs.0</td>
+
+                <td><span class="status-badge status-completed">COMPLETED</span></td>
+            </tr>
+            </tbody>
+        </table>
+        <div th:if="${#lists.isEmpty(driverHistory)}" class="empty-state">
+            You haven't completed any trips yet.
+        </div>
+    </div>
+
+</div>
+
+<div id="finishModal" class="modal-overlay">
+    <div class="form-card" style="width: 100%; max-width: 400px; margin: auto;">
+        <button class="modal-close" onclick="closeFinishModal()">✕</button>
+        <h2 style="margin-bottom: 8px;">Complete Trip</h2>
+        <p style="font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5;">Enter the actual distance traveled to dynamically calculate the final fare for the passenger.</p>
+
+        <form th:action="@{/finish-booking}" method="post">
+            <input type="hidden" name="bookingDetail" id="finishBookingDetail" />
+
+            <div class="form-group">
+                <label class="form-label">Actual Distance Traveled (km)</label>
+                <input class="form-input" type="number" step="0.1" min="0.1" name="actualDistance" placeholder="e.g. 15.5" required autofocus />
+            </div>
+
+            <button type="submit" class="btn btn-finish" style="width: 100%; padding: 16px;">CONFIRM & COMPLETE TRIP</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openFinishModal(jobDataStr) {
+        document.getElementById('finishBookingDetail').value = jobDataStr;
+        document.getElementById('finishModal').style.display = 'flex';
+    }
+    function closeFinishModal() {
+        document.getElementById('finishModal').style.display = 'none';
+    }
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>

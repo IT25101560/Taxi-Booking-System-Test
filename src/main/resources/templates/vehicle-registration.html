@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Fleet Management - SwiftRide Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --black:   #080a0f;
+            --deep:    #0d1117;
+            --card:    #111827;
+            --border:  #1f2a3a;
+            --amber:   #f5a623;
+            --amber2:  #ffd166;
+            --white:   #f0f4ff;
+            --muted:   #7a8fa8;
+            --danger:  #e05555;
+            --green:   #30d87c;
+            --blue:    #3b82f6;
+        }
+
+        body { background: var(--black); color: var(--white); font-family: 'DM Sans', sans-serif; margin: 0; padding: 0; }
+
+        nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 48px; background: rgba(8,10,15,0.95); border-bottom: 1px solid var(--border); }
+        .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--amber); }
+        .nav-logo span { color: var(--white); }
+        .nav-links a { color: var(--muted); text-decoration: none; margin-left: 30px; font-size: 13px; font-weight: 500; transition: color 0.2s;}
+        .nav-links a:hover, .nav-links a.active { color: var(--amber); }
+
+        .container { padding: 48px; max-width: 1300px; margin: 0 auto; }
+        .header-row { margin-bottom: 40px; }
+        .header-row h1 { font-family: 'Bebas Neue', sans-serif; font-size: 48px; margin: 0; letter-spacing: 2px; color: var(--amber); }
+        .header-row p { color: var(--muted); margin-top: 8px; font-size: 15px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 350px 1fr; gap: 32px; align-items: start; }
+
+        /* FORM CARD */
+        .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); position: relative; }
+        .form-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--amber), var(--amber2), transparent); border-radius: 16px 16px 0 0; }
+        .form-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1.5px; margin-bottom: 24px; color: var(--white); }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 14px; box-sizing: border-box; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: all .2s; }
+        .form-input:focus { border-color: var(--amber); background: rgba(245,166,35,0.04); }
+        select.form-input option { background: var(--deep); color: var(--white); }
+
+        .submit-btn { width: 100%; padding: 16px; margin-top: 10px; background: var(--amber); color: var(--black); border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; cursor: pointer; transition: all .2s; }
+        .submit-btn:hover { background: var(--amber2); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245,166,35,0.2); }
+
+        /* TABLE CARD */
+        .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .table-header { padding: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .table-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1.5px; margin: 0; }
+        .vehicle-count { font-family: 'Space Mono', monospace; font-size: 12px; background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: 100px; color: var(--amber); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(255,255,255,0.02); text-align: left; padding: 18px 24px; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+        td { padding: 18px 24px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(245,166,35,0.02); }
+
+        .vehicle-details { font-weight: 500; color: var(--white); }
+        .type-badge { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--amber); }
+        .owner-text { font-size: 13px; color: var(--muted); }
+
+        /* ACTION BUTTONS (Matches Driver Directory) */
+        .btn-group { display: flex; gap: 8px; }
+        .btn-action { background: transparent; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; color: var(--white); }
+
+        .btn-edit:hover { background: var(--white); color: var(--black); }
+        .btn-remove:hover { background: var(--danger); border-color: var(--danger); color: white; }
+
+        .empty-state { padding: 60px; text-align: center; color: var(--muted); font-style: italic; }
+
+        /* MODAL STYLES */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(8,10,15,0.85); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; position: relative; }
+        .modal-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--white), transparent); border-radius: 16px 16px 0 0; }
+        .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+        .modal-close:hover { color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo">SwiftRide <span>ADMIN</span></div>
+    <div class="nav-links">
+        <a th:href="@{/admin}">Dashboard</a>
+        <a th:href="@{/register-vehicle}" class="active">Vehicles</a>
+        <a th:href="@{/drivers}">Drivers</a>
+        <a th:href="@{/view}">Bookings</a>
+        <a th:href="@{/logout}" style="color: var(--danger);">Sign Out</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header-row">
+        <h1>Fleet Management</h1>
+        <p>Register new vehicles into the system and manage your active fleet inventory.</p>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <div class="form-card">
+            <h2>Add New Vehicle</h2>
+            <form th:action="@{/add-vehicle}" method="post" onsubmit="this.querySelector('.submit-btn').disabled = true; this.querySelector('.submit-btn').innerText = 'REGISTERING...';">
+
+                <div class="form-group">
+                    <label class="form-label">License Plate Number</label>
+                    <input class="form-input" type="text" name="plate" placeholder="e.g. WP CAS-1234" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Vehicle Make & Model</label>
+                    <input class="form-input" type="text" name="model" placeholder="e.g. Toyota Prius" required />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fleet Category</label>
+                    <select class="form-input" name="type" required>
+                        <option value="Fast & Cheap">Fast & Cheap</option>
+                        <option value="Economy">Economy</option>
+                        <option value="Comfort">Comfort</option>
+                        <option value="Family">Family</option>
+                        <option value="Luxury">Luxury</option>
+                        <option value="Premium">Premium</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Vehicle Owner Details</label>
+                    <input class="form-input" type="text" name="owner" placeholder="e.g. driver1" required />
+                </div>
+
+                <button type="submit" class="submit-btn">REGISTER VEHICLE</button>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <h2>Active Fleet Inventory</h2>
+                <span class="vehicle-count" th:text="'Total Vehicles: ' + ${#lists.size(vehicles)}">Total: 0</span>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Plate & Model</th>
+                    <th>Category</th>
+                    <th>Owner</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="vehicle, iterStat : ${vehicles}" th:with="parts=${vehicle.split(' - ')}">
+
+                    <td class="vehicle-details" th:text="${parts.length > 0 ? parts[0] : 'Unknown'}">WP CAS-1234 (Toyota Prius)</td>
+                    <td class="type-badge" th:text="${parts.length > 1 ? parts[1] : 'Unknown'}">Economy</td>
+                    <td class="owner-text"><span th:text="${parts.length > 3 ? parts[3].replace('Owned by ', '') : 'Company Owned'}"></span></td>
+
+                    <td th:with="statusText=${parts.length > 2 ? parts[2].trim() : 'Available'}">
+                        <span th:if="${statusText == 'Busy'}" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--blue); margin-right:6px; box-shadow:0 0 8px var(--blue);"></span>
+                        <span th:if="${statusText != 'Busy'}" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--green); margin-right:6px; box-shadow:0 0 8px var(--green);"></span>
+                        <span th:text="${statusText}" th:style="${statusText == 'Busy' ? 'color: var(--blue); font-weight: bold; text-transform: uppercase;' : 'color: var(--green); font-weight: bold; text-transform: uppercase;'}">Available</span>
+                    </td>
+
+                    <td class="btn-group">
+                        <button type="button" class="btn-action btn-edit" th:attr="onclick=|openEditModal('${iterStat.index}', '${vehicle}')|">EDIT</button>
+
+                        <form th:action="@{/delete-vehicle}" method="post" style="margin: 0;" onsubmit="return confirm('Are you sure you want to remove this vehicle from the fleet?');">
+                            <input type="hidden" name="id" th:value="${iterStat.index}"/>
+                            <button type="submit" class="btn-action btn-remove">REMOVE</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div th:if="${#lists.isEmpty(vehicles)}" class="empty-state">No vehicles have been registered in the fleet yet.</div>
+        </div>
+    </div>
+</div>
+
+<div id="editModal" class="modal-overlay">
+    <div class="modal-card">
+        <button class="modal-close" onclick="closeEditModal()">✕</button>
+        <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1.5px; margin-bottom: 24px;">Edit Vehicle Data</h2>
+
+        <form th:action="@{/edit-vehicle}" method="post">
+            <input type="hidden" name="id" id="editId" />
+
+            <div class="form-group">
+                <label class="form-label">License Plate Number</label>
+                <input class="form-input" type="text" name="plate" id="editPlate" required />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Vehicle Make & Model</label>
+                <input class="form-input" type="text" name="model" id="editModel" required />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Fleet Category</label>
+                <select class="form-input" name="type" id="editType" required>
+                    <option value="Fast & Cheap">Fast & Cheap</option>
+                    <option value="FastCheap">FastCheap</option>
+                    <option value="Economy">Economy</option>
+                    <option value="Comfort">Comfort</option>
+                    <option value="Family">Family</option>
+                    <option value="Luxury">Luxury</option>
+                    <option value="Premium">Premium</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Vehicle Owner Details</label>
+                <input class="form-input" type="text" name="owner" id="editOwner" required />
+            </div>
+
+            <button type="submit" class="submit-btn" style="background: var(--white); color: var(--black);">SAVE CHANGES</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditModal(index, vehicleStr) {
+        document.getElementById('editId').value = index;
+
+        // Break apart "WP CAS-1234 (Toyota Prius) - Economy - Available - Owned by John Doe"
+        let parts = vehicleStr.split(' - ');
+        if(parts.length >= 4) {
+
+            // Extract Plate and Model safely
+            let plateModel = parts[0];
+            let plate = plateModel.substring(0, plateModel.indexOf('(')).trim();
+            let model = plateModel.substring(plateModel.indexOf('(') + 1, plateModel.lastIndexOf(')')).trim();
+
+            document.getElementById('editPlate').value = plate;
+            document.getElementById('editModel').value = model;
+
+            // Dropdown Type
+            document.getElementById('editType').value = parts[1].trim();
+
+            // Clean up owner text
+            let owner = parts[3].replace('Owned by', '').trim();
+            document.getElementById('editOwner').value = owner;
+        }
+
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal-overlay')) {
+            event.target.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>

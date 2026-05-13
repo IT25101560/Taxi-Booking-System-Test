@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard - SwiftRide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --black:   #080a0f;
+            --card:    #111827;
+            --border:  #1f2a3a;
+            --amber:   #f5a623;
+            --white:   #f0f4ff;
+            --danger:  #e05555;
+            --green:   #30d87c;
+        }
+        body {
+            background: var(--black);
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            margin: 0; padding: 0;
+        }
+
+        /* ADMIN NAVBAR */
+        nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 48px; background: rgba(8,10,15,0.95);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--amber); }
+        .nav-logo span { color: var(--white); }
+        .nav-links a { color: #7a8fa8; text-decoration: none; margin-left: 30px; font-size: 14px; font-weight: 500; transition: color 0.2s;}
+        .nav-links a:hover, .nav-links a.active { color: var(--amber); }
+
+        /* DASHBOARD LAYOUT */
+        .container { padding: 48px; max-width: 1200px; margin: 0 auto; }
+
+        .header { margin-bottom: 40px; }
+        .header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 48px; margin: 0; letter-spacing: 1px; color: var(--amber); }
+        .header p { color: #7a8fa8; font-size: 16px; margin-top: 8px; }
+
+        /* ACTION CARDS */
+        .card-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;
+        }
+        .action-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 40px 32px; text-align: center; cursor: pointer; text-decoration: none; color: var(--white);
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .action-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--amber), transparent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+        }
+        .action-card:hover { transform: translateY(-5px); border-color: rgba(245,166,35,0.3); background: rgba(255,255,255,0.02);}
+        .action-card:hover::before { transform: scaleX(1); }
+
+        .icon { font-size: 48px; margin-bottom: 16px; display: block; }
+        .title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px; margin-bottom: 8px; }
+        .desc { font-size: 13px; color: #7a8fa8; line-height: 1.5; margin: 0;}
+
+        /* SYSTEM ALERT BANNER */
+        .system-banner {
+            margin-top: 40px;
+            background: rgba(48, 216, 124, 0.05);
+            border: 1px solid rgba(48, 216, 124, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .system-banner .indicator {
+            width: 12px; height: 12px; border-radius: 50%; background: var(--green);
+            box-shadow: 0 0 10px var(--green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .system-banner-text { font-size: 14px; color: var(--white); }
+        .system-banner-text span { font-weight: 600; color: var(--green); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo">SwiftRide <span>ADMIN</span></div>
+    <div class="nav-links">
+        <a th:href="@{/admin}" class="active">Dashboard</a>
+        <a th:href="@{/users}">Users</a>
+        <a th:href="@{/register-vehicle}">Vehicles</a>
+        <a th:href="@{/drivers}">Drivers</a>
+        <a th:href="@{/view}">Bookings</a>
+        <a th:href="@{/logout}" style="color: var(--danger);">Sign Out</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header">
+        <h1>SYSTEM DASHBOARD</h1>
+        <p>Welcome back, Administrator. What would you like to manage today?</p>
+    </div>
+
+    <div class="card-grid">
+
+        <a th:href="@{/users}" class="action-card">
+            <span class="icon">👥</span>
+            <div class="title">USER DIRECTORY</div>
+            <p class="desc">Add, edit, or remove registered customers and assign roles.</p>
+        </a>
+
+        <a th:href="@{/drivers}" class="action-card">
+            <span class="icon">👨‍✈️</span>
+            <div class="title">MANAGE DRIVERS</div>
+            <p class="desc">Review driver applications, manage the fleet team, and revoke access.</p>
+        </a>
+
+        <a th:href="@{/register-vehicle}" class="action-card">
+            <span class="icon">🚕</span>
+            <div class="title">MANAGE VEHICLES</div>
+            <p class="desc">Register new cars into the system, categorize them, and manage plates.</p>
+        </a>
+
+        <a th:href="@{/view}" class="action-card">
+            <span class="icon">🌍</span>
+            <div class="title">GLOBAL BOOKINGS</div>
+            <p class="desc">System oversight: View all active, pending, and accepted trips.</p>
+        </a>
+    </div>
+
+    <div class="system-banner">
+        <div class="indicator"></div>
+        <div class="system-banner-text">
+            <span>System Online:</span> Privacy filters are active. Customers only see their personal history, while you retain full global oversight.
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
