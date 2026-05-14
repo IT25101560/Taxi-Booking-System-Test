@@ -1,0 +1,8 @@
+user1 (kaduwela to malmbe),Fast & Cheap,10.0,500.0,COMPLETED by driver1
+user1 (kaduwela to malmbe),Economy,TBD,TBD,ONGOING by driver2
+user2 (Ginigathena to kaduwela),Comfort,80.5,5685.0,COMPLETED by driver3
+user2 (kaduwela to malmbe),Fast & Cheap,5.0,250.0,COMPLETED by driver1
+user2 (kaduwela to malmbe),Family,TBD,TBD,ONGOING by driver4
+user1 (kaduwela to malmbe),Premium,100.0,10200.0,COMPLETED by driver5
+user1 (kaduwela to malmbe),Fast & Cheap,15.0,750.0,COMPLETED by driver1
+user3 (Hatton to Colombo),Premium,100.0,100000.0,COMPLETED by driver5
