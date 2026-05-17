@@ -1,5 +1,0 @@
-1234567890,driver1,driver1@taxi.com,B1234567,Available
-0987654321,driver3,driver3@taxi.com,B7654321,Available
-2347890125,driver4,driver4@taxi.com,B1230985,Available
-4561230984,driver5,driver5@taxi.com,B6780129,Available
-3456789012,driver2,driver2@taxi.com,B0987654,Available
